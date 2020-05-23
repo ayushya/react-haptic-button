@@ -1,8 +1,8 @@
 import PropTypes from 'prop-types';
-import React, { Component } from 'react';
+import React, { PureComponent } from 'react';
 import root from 'window-or-global';
 
-export default class ReactHapticButton extends Component {
+export default class ReactHapticButton extends PureComponent {
   render () {
     const {
       children,
@@ -15,7 +15,7 @@ export default class ReactHapticButton extends Component {
       <button
         onClick={(e) => {
           if (isHapticFeedbackEnabled) {
-            root?.navigator?.vibrate?.(hapticFeedbackDuration);
+            root?.navigator?.vibrate?.(Number(hapticFeedbackDuration));
           }
           onClick?.(e);
         }}
