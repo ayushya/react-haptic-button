@@ -5,7 +5,7 @@ A React Button with Life (Haptic Feedback)
 
 Enhance your User Experience with Haptic Feedback when you click the Button.*
 
-*Currently this is available only on Android Devices. IOS is not supported. Check Browser Compatibility for more.
+*Currently available only on Android Devices. IOS is not supported. Check Browser Compatibility for more.
 
 ## Features
 
