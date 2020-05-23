@@ -1,4 +1,6 @@
-# react-haptic-button
+# react-haptic-button 
+
+[![CircleCI](https://circleci.com/gh/ayushya/react-haptic-button.svg?style=shield)](https://circleci.com/gh/ayushya/react-haptic-button)
 
 A React Button with Life (Haptic Feedback)
 
