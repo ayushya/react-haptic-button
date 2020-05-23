@@ -1,6 +1,6 @@
 {
   "name": "react-haptic-button",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "description": "A React Button with Life (Haptic Feedback)",
   "main": "dist/js/index.js",
   "scripts": {
