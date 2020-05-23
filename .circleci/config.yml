@@ -57,7 +57,7 @@ commands:
             
             # This is important to set as yarn publish will fail bumping the package version without knowing the user
             # yarn publish will make a commit to bump up the version but won't push it. We don't want to push it either.
-            git config --global user.name "$ARTIFACTORY_USER"
+            git config --global user.name "circle-ci"
             
 
             # This will build and publish the package
