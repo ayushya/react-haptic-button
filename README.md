@@ -38,6 +38,7 @@ yarn add react-haptic-button
   >
   Confirm
   </HapticButton>
+```
 
 ## Props
 
@@ -54,4 +55,3 @@ All the other props passed to HapticButton are applied to the `<button>` interna
 Haptic Feedback is available on Android Devices.
 
 ![Browser Compatibility](https://user-images.githubusercontent.com/7705367/82729953-aec34f00-9d19-11ea-9917-de78022e5ba9.png)
-<img src="https://user-images.githubusercontent.com/7705367/82729953-aec34f00-9d19-11ea-9917-de78022e5ba9.png" >
