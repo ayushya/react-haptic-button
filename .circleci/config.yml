@@ -1,0 +1,166 @@
+version: 2.1
+
+#-------------------------------------------------------------------#
+executors:
+  node-executor:
+    docker:
+      - image: circleci/node:12
+
+#-------------------------------------------------------------------#
+# ----- DO NOT modify these commands -----
+# This command defines the flow for building and publishing private distribution packages 
+commands:
+  artifactory-package-initialize:
+    steps:
+      - checkout
+      - run:
+          name: Configure .npmrc file
+          command: |
+            # Creating .npmrc file, this is required to authenticate, install and publish.
+            echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" > ~/.npmrc
+      - restore_cache:
+          name: Restore Yarn Package Cache
+          keys:
+            - yarn-packages-v1-{{ .Branch }}-{{ checksum "yarn.lock" }}
+      - run:
+          name: Install the packages
+          command: |
+            yarn
+      - save_cache:
+          name: Save Yarn Package Caches
+          paths:
+            - ~/.cache/yarn
+          key: yarn-packages-v1-{{ .Branch }}-{{ checksum "yarn.lock" }}
+      - persist_to_workspace:
+          root: /home/circleci
+          paths:
+            - project
+            - .npmrc
+
+  artifactory-package-release:
+    steps:
+      - attach_workspace:
+          at: /home/circleci
+      - run:
+          name: Build and Publish Distribution Packages to NPM
+          command: |
+            # Get the Package version
+            PACKAGE_VERSION=`node -p "require('./package.json').version"`
+
+            # For builds triggered via $CIRCLE_TAG use version from $PACKAGE_VERSION
+            # otherwise use version as $PACKAGE_VERSION-dev-$CIRCLE_BUILD_NUM
+            if [[ $CIRCLE_TAG == "" ]]; then
+              DISTRIBUTION_VERSION="$PACKAGE_VERSION-dev-$CIRCLE_BUILD_NUM"
+            else
+              DISTRIBUTION_VERSION="$PACKAGE_VERSION"
+            fi
+            
+            # This is important to set as yarn publish will fail bumping the package version without knowing the user
+            # yarn publish will make a commit to bump up the version but won't push it. We don't want to push it either.
+            git config --global user.name "$ARTIFACTORY_USER"
+            
+
+            # This will build and publish the package
+            echo "Publishing version "$DISTRIBUTION_VERSION" to NPM"
+            yarn publish --new-version $DISTRIBUTION_VERSION
+            echo "Uploaded version '$DISTRIBUTION_VERSION' to NPM"
+
+  artifactory-package-lint:
+    steps:
+      - attach_workspace:
+          at: /home/circleci
+      - run:
+          name: Run Linter
+          command: |
+            yarn lint
+
+  artifactory-package-test:
+    steps:
+      - attach_workspace:
+          at: /home/circleci
+      - run:
+          name: Run tests
+          command: |
+            yarn test
+
+#-------------------------------------------------------------------#
+jobs:
+  # Checkout the code, set .npmrc, install package and persist_to_workspace
+  initalize:
+    executor: node-executor
+    steps:
+      - artifactory-package-initialize
+  # Package specfic linting checks, these are executed before building and publishing.
+  lint:
+    executor: node-executor
+    steps:
+      - artifactory-package-lint
+
+# All package specfic tests, these are executed before building and publishing.
+  test:
+    executor: node-executor
+    environment:
+      LC_ALL: 'en_US.UTF-8'
+      TZ: 'Asia/Kolkata'
+    steps:
+      - artifactory-package-test
+
+  # Build and publish distribution packages to artifactory
+  build-release:
+    executor: node-executor
+    steps:
+      - artifactory-package-release
+
+#-------------------------------------------------------------------#
+workflows:
+  version: 2
+  test-build-release:
+    jobs:
+      - initalize:
+          # The `npm-publisher` context contains NPM_TOKEN
+
+          context: npm-publisher
+          filters:
+            # This job will be trigerred only when -
+
+            # (a) Workflow is triggered by tag of the format /^[a-zA-Z0-9-]*[a-zA-Z0-9]\/v[\d]+.[\d]+.[\d]+$/
+            #  Example loading/v2.7.1
+            tags:
+              only: /^react-haptic-button\/v(\d+\.\d+\.\d+)/
+      - lint:
+          # This job will be trigerred only when the `initalize` job is completed successfully.
+
+          # Other Conditions for running this job is same as that of the
+          # `initalize` job (mentioned above).
+          context: npm-publisher
+          requires:
+            - initalize
+          filters:
+            tags:
+              only: /^react-haptic-button\/v(\d+\.\d+\.\d+)/
+      - test:
+          # This job will be trigerred only when the `initalize` job is completed successfully.
+
+          # Other Conditions for running this job is same as that of the
+          # `initalize` job (mentioned above).
+          context: npm-publisher
+          requires:
+            - initalize
+          filters:
+            tags:
+              only: /^react-haptic-button\/v(\d+\.\d+\.\d+)/
+      - build-release:
+          # This job will be trigerred only when the `initalize`, `lint` and `test` jobs are completed successfully.
+          
+          # Other Conditions for running this job is same as that of the
+          # `initalize` job (mentioned above).
+          context: npm-publisher
+
+          requires:
+            - initalize
+            - lint
+            - test
+
+          filters:
+            tags:
+              only: /^react-haptic-button\/v(\d+\.\d+\.\d+)/
