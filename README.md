@@ -1,11 +1,13 @@
-# react-haptic-button
+# react-haptic-button 
+
+[![CircleCI](https://circleci.com/gh/ayushya/react-haptic-button.svg?style=shield)](https://circleci.com/gh/ayushya/react-haptic-button)
 
 A React Button with Life (Haptic Feedback)
 
 
 Enhance your User Experience with Haptic Feedback when you click the Button.*
 
-* Currently this is available only on Android Devices. IOS is not supported. Check Browser Compatibility for more.
+*Currently available only on Android Devices. IOS is not supported. Check Browser Compatibility for more.
 
 ## Features
 
@@ -38,6 +40,7 @@ yarn add react-haptic-button
   >
   Confirm
   </HapticButton>
+```
 
 ## Props
 
@@ -52,3 +55,5 @@ All the other props passed to HapticButton are applied to the `<button>` interna
 ## Browser Compatibility
 
 Haptic Feedback is available on Android Devices.
+
+![Browser Compatibility](https://user-images.githubusercontent.com/7705367/82729953-aec34f00-9d19-11ea-9917-de78022e5ba9.png)
